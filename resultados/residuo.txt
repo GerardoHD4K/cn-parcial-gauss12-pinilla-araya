@@ -1,0 +1,68 @@
+==========================================================================================
+VERIFICACIÓN EN PRECISIÓN EXTENDIDA (Decimal, 50 DÍGITOS) Y REFINAMIENTO ITERATIVO
+Computación Numérica (INF-321) — UCM | Estudiantes: Gerardo Pinilla, Matías Araya
+==========================================================================================
+
+1. NORMAS DEL RESIDUO r = b - Ax (precisión extendida: 50 dígitos decimales)
+------------------------------------------------------------------------------------------
+  Sin pivoteo (directo float64)           : ||r||_inf = 1.771752e-7 | ||r||_2 = 2.172196e-7
+  Pivoteo parcial sin escalar (control)   : ||r||_inf = 5.372954e-10 | ||r||_2 = 5.669545e-10
+  Pivoteo parcial escalado (directo f64)  : ||r||_inf = 2.290876e-10 | ||r||_2 = 2.369583e-10
+  Pivoteo escalado + refinamiento (f64)   : ||r||_inf = 2.603187e-10 | ||r||_2 = 2.605076e-10
+  Control biblioteca (numpy.linalg.solve) : ||r||_inf = 7.756087e-11 | ||r||_2 = 1.095217e-10
+
+2. VECTOR RESIDUO COMPONENTE A COMPONENTE
+------------------------------------------------------------------------------------------
+   i |       r_i (escalado directo)   |     r_i (escalado refinado)    |     r_i (sin pivoteo)
+------------------------------------------------------------------------------------------
+   1 |      -8.076888766280821397e-21 |      -3.460579406854902818e-21 |    +1.27416780328395e-20
+   2 |      -8.729114464595088929e-13 |      +1.342384381222142560e-12 |     -9.48895822686468e-9
+   3 |      -3.592964166659877893e-18 |      +2.322764128585847850e-18 |    +1.99877816788402e-16
+   4 |      +4.397029139892498001e-12 |      -1.927930221973752295e-12 |     -1.02056798850143e-8
+   5 |      -8.922330049597065756e-20 |      -1.829773859790839603e-20 |    -9.75774949055868e-18
+   6 |      +2.290876438497906470e-10 |      -2.603187369605071005e-10 |     +1.77175200312347e-7
+   7 |      -1.390746536076952738e-17 |      -9.806287101840003828e-19 |    +4.21226374078170e-14
+   8 |      +3.113763515938033830e-11 |      +2.070404949958692153e-12 |     +9.56998695566453e-8
+   9 |      -1.802909306141402475e-20 |      +9.406367635614377321e-21 |    +7.16167580832283e-17
+  10 |      -3.566633905199449774e-12 |      -6.943865621427056567e-13 |    +6.89453428098677e-10
+  11 |      +9.885511241671874884e-18 |      -5.689585572327837779e-19 |    +6.32945263358021e-15
+  12 |      +5.163080009631101030e-11 |      -9.384789012496933545e-12 |     +8.02506341530305e-8
+------------------------------------------------------------------------------------------
+  Norma infinito ||r||_inf (escalado directo)  : 2.290876438497906470e-10
+  Norma infinito ||r||_inf (escalado refinado) : 2.603187369605071005e-10
+
+3. REFINAMIENTO ITERATIVO (reutilizando L y U en float64, r en Decimal 50 dígitos)
+------------------------------------------------------------------------------------------
+  a) Sobre pivoteo parcial escalado (actualizando x en float64):
+     Iteración 1: ||r_antes||_inf = 2.290876e-10 -> ||dx||_inf = 6.709128e-13 (rel = 2.357e-13) -> ||r_despues||_inf = 2.603187e-10 [276 FLOPs]
+     Iteración 2: ||r_antes||_inf = 2.603187e-10 -> ||dx||_inf = 1.712205e-16 (rel = 6.016e-17) -> ||r_despues||_inf = 2.603187e-10 [276 FLOPs]
+  b) Corrida auxiliar acumulando x en Decimal (mismos factores L y U en float64):
+     Iteración 1: ||dx||_inf = 6.709128e-13 -> ||r_despues||_inf = 1.366244e-22
+     Iteración 2: ||dx||_inf = 1.757136e-25 -> ||r_despues||_inf = 3.927509e-35
+  c) Sobre corrida sin pivoteo (actualizando x en float64):
+     Iteración 1: ||r_antes||_inf = 1.771752e-7 -> ||dx||_inf = 5.920647e-10 (rel = 2.080e-10) -> ||r_despues||_inf = 2.603187e-10 [276 FLOPs]
+     Iteración 2: ||r_antes||_inf = 2.603187e-10 -> ||dx||_inf = 1.712205e-16 (rel = 6.016e-17) -> ||r_despues||_inf = 2.603187e-10 [276 FLOPs]
+
+  Observación sobre ||r||_inf ≈ 2.603e-10 en float64:
+  En la iteración 2, ||dx||_inf = 1.712e-16 (< épsilon de máquina), lo que indica que x
+  ya llegó al límite de representación de float64 (53 bits). El residuo ~2.60e-10 viene
+  solo de multiplicar el error de redondeo binario de x (~5e-17) por las entradas de la
+  fila 6 (~10^6). Si se acumula x en Decimal, ||r||_inf cae a 1.37e-22 y 3.93e-35.
+
+4. CONDICIONAMIENTO Y CASI DEPENDENCIA LINEAL
+------------------------------------------------------------------------------------------
+  det(A)                                : 1.364551e+09
+  κ_2(A)  (matriz original)             : 3.084744e+13
+  κ_∞(A)  (matriz original)             : 5.367827e+13
+  κ_2(D⁻¹A) (escalada por filas)        : 8.132348e+03
+  κ_∞(D⁻¹A) (escalada por filas)        : 1.490302e+04
+  Razón de escalas (s_max / s_min)      : 1.201097e+10 (8.050e-05 .. 9.669e+05)
+  Cota clásica κ_2(A)·ε                 : 6.849507e-03
+  Cota escalada κ_2(D⁻¹A)·ε             : 1.805744e-12
+  Casi dependencia F7 ≈ α·F3 + β·F5     : α = 4.177250, β = 583.246740
+    ||F7 - (α·F3 + β·F5)||_2            : 1.942375e-04 (relativo: 2.283352e-03)
+
+5. CONTROL EXTERNO CONTRA numpy.linalg.solve
+------------------------------------------------------------------------------------------
+  Máx. dif. relativa |x_escalado - x_np| / |x_np| : 7.307111e-12
+  Máx. dif. relativa |x_refinado - x_np| / |x_np| : 9.266633e-11
