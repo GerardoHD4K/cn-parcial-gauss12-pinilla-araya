@@ -33,7 +33,7 @@ def iniciar_paso(cont, numero_paso):
 
 def registrar_pivote(cont, fila_original, valor_pivote):
     cont["paso_actual"]["fila_pivote"] = fila_original
-    cont["paso_actual"]["valor_pivote"] = valor_piote
+    cont["paso_actual"]["valor_pivote"] = valor_pivote
 
 
 def iniciar_sustitucion(cont):
@@ -87,6 +87,16 @@ def obtener_totales(cont):
         "swaps": sum(p["swaps"] for p in cont["pasos"]),
     }
 
+def cotas_teoricas(n):
+    termino_cubico = (2 * (n ** 3)) // 3
+    minimo_sin_col_k = (2 * (n ** 3)) // 3 + (3 * (n ** 2)) // 2 - (7 * n) // 6
+    referencia_con_col_k = minimo_sin_col_k + n * (n - 1)
+    return {
+        "termino_cubico": termino_cubico,
+        "minimo_exacto": minimo_sin_col_k,
+        "referencia_enunciado": referencia_con_col_k,
+    }
+    
 def guardar_conteo_md(contadores, ruta_salida):
     principal = contadores["escalado"]
     tot = obtener_totales(principal)
