@@ -28,7 +28,7 @@ def verificar_subdiagonal(U):
                 max_sub = val
     return ceros, total, max_sub
 
-def eliminacion_gaussiana(A,B, pivoteo="escalado"):
+def eliminacion_gaussiana(A,b, pivoteo="escalado"):
     # pivoteo puede ser: "ninguno", "parcial" o "escalado"
     if pivoteo not in ("ninguno", "parcial", "escalado"):
         raise ValueError(f"Modo de pivoteo no válido: {pivoteo}")
